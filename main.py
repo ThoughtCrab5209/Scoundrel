@@ -9,7 +9,10 @@ from player import Player
 # functions
 def take_player_action(cards, player):
 
-    print("Input the number of the card to interact with, or input '0' to skip this floor")
+    if player.last_floor_skipped == 0:
+        print("Input the number of the card to interact with, or input '0' to skip this floor")
+    else:
+        print("Input the number of the card to interact with; This floor can not be skipped")
 
     # 1. pick a card
     user_input = input("Select a card: ")
@@ -17,6 +20,10 @@ def take_player_action(cards, player):
     # 2. process
     if user_input == '0' and player.last_floor_skipped == 0:
         player.last_floor_skipped = 1
+        cards = []
+    
+    elif user_input == '0' and player.last_floor_skipped != 0:
+        player.health = 0
         cards = []
     
     else:            
@@ -103,7 +110,7 @@ def print_floor_ui(cards, floor_number: int, player):
     print(f"HEALTH: {player.health}")
     print(f"WEAPON: {player.weapon}")
     if player.last_fought_enemy == 15:
-        print("WEAPON: NONE")
+        print("LAST FOUGHT ENEMY: NONE")
     else:
         print(f"LAST FOUGHT ENEMY: {player.last_fought_enemy}")
 
@@ -136,7 +143,7 @@ def shuffle_deck():
 
 # main
 def main():
-    random.seed(0000)
+    random.seed()
     player = Player()
 
     # generate the deck

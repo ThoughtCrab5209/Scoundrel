@@ -58,6 +58,9 @@ class Player:
     
 
     def change_weapon(self, value: int):
+        if value == '0':
+            value = 10
+
         self.weapon = value
         self.last_fought_enemy = 15
 
