@@ -1,5 +1,6 @@
 # imports
 import random
+import sys
 from player import Player
 
 
@@ -10,20 +11,22 @@ from player import Player
 def take_player_action(cards, player):
 
     if player.last_floor_skipped == 0:
-        print("Input the number of the card to interact with, or input '0' to skip this floor")
+        print("Input the number of the card to interact with\n")
     else:
-        print("Input the number of the card to interact with; This floor can not be skipped")
+        print("Input the number of the card to interact with; This floor can not be skipped\n")
 
     # 1. pick a card
     user_input = input("Select a card: ")
 
     # 2. process
+    # first skip
     if user_input == '0' and player.last_floor_skipped == 0:
         player.last_floor_skipped = 1
         cards = []
     
+    # second skip (automatic loss)
     elif user_input == '0' and player.last_floor_skipped != 0:
-        player.health = 0
+        player.last_floor_skipped = 3
         cards = []
     
     else:            
@@ -102,6 +105,9 @@ def print_floor_ui(cards, floor_number: int, player):
 
     print(f"=========== Floor {floor_number} ===========\n")
     
+    if player.last_floor_skipped == 0:
+        print("[0] Skip")
+
     for i in range (0, cards.__len__()):
         print(f"[{i+1}] {translate_card(cards[i])}")
 
@@ -143,19 +149,27 @@ def shuffle_deck():
 
 # main
 def main():
-    random.seed()
+    
+    # Code obtained from: https://stackoverflow.com/questions/5012560/how-to-query-seed-used-by-random-random
+    # generate random seed (plus print seed)
+    seed = random.randrange(sys.maxsize)
+    rng = random.Random(seed)
+    print("Seed was:", seed)
+
+    # initialise the player
     player = Player()
 
     # generate the deck
     game_deck = shuffle_deck()
 
+    # set initial variables
     current_floor = []
     floor_count = 0
     actions_remaining = 4
     
 
-    # continue the gameplay loop while there are still cards to be drawn
-    while game_deck.__len__() > 0 and player.health > 0:
+    # gameplay loop
+    while game_deck.__len__() > 0 and player.health > 0 and player.last_floor_skipped != 3:
         
         # set values
         actions_remaining = 4
@@ -182,6 +196,23 @@ def main():
             else:
                 actions_remaining -= 1
     
+
+    # results
+    # win
+    if player.health != 0 and player.last_floor_skipped != 3:
+        print("YOU WIN")
+
+    # lose by health = 0
+    elif player.health == 0:
+        print("YOU LOSE BY DYING")
+
+    # lose by skipping twice
+    elif player.last_floor_skipped == 3:
+        print("YOU LOSE BY SKIPPING TWO SIMULTANEOUS FLOORS")
+    
+    else:
+        print("WHAT")
+
 
 # run the program
 main()

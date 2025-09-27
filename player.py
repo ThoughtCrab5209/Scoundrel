@@ -1,10 +1,17 @@
 class Player:
     def __init__(self):
         self.health = 20
+        self.previously_healed = False
+
         self.weapon = 0
         self.last_fought_enemy = 15
+
         self.last_floor_skipped = 0
-        self.previously_healed = False
+        # 0 = can skip floor
+        # 1 = can't skip next floor
+        # 2 = reset to 0 next floor
+        # 3 = skip two rooms (lose)
+        
 
 
     def heal(self, value: int):
@@ -36,15 +43,9 @@ class Player:
         else:
             value = int(value)
 
-        # fight barehanded
-        if value > self.last_fought_enemy:
-            self.health -= value
-        
-            if self.health < 0:
-                self.health = 0
 
-        # fight with weapon
-        else:
+        # check if player can fight with their weapon
+        if self.weapon != 0 and value < self.last_fought_enemy:
             self.last_fought_enemy = value
             value -= self.weapon
 
@@ -55,10 +56,17 @@ class Player:
 
             if self.health < 0:
                 self.health = 0
-    
+
+        # fight barehanded
+        else:
+            self.health -= value
+        
+            if self.health < 0:
+                self.health = 0
+
 
     def change_weapon(self, value: int):
-        if value == '0':
+        if value == 0:
             value = 10
 
         self.weapon = value
