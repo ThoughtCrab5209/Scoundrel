@@ -4,8 +4,6 @@ import sys
 from player import Player
 
 
-# variables
-
 
 # functions
 def take_player_action(cards, player):
@@ -29,28 +27,50 @@ def take_player_action(cards, player):
         player.last_floor_skipped = 3
         cards = []
     
-    else:            
-        card = cards[int(user_input) - 1]
-        split_card = card.split("-")
-        rank = split_card[0]
-        suit = split_card[1]
+    else:
 
-        match suit:
-            case "H":
-                player.heal(int(rank))
-            case "D":
-                player.change_weapon(int(rank))
-            case "S":
-                player.fight(rank)
-            case "C":
-                player.fight(rank)
+        try:
+            card = cards[int(user_input) - 1]
+            split_card = card.split("-")
+            rank = split_card[0]
+            suit = split_card[1]
 
-        # 3. remove card from cards
-        cards.remove(card)
+            match suit:
+                case "H":
+                    player.heal(int(rank))
+                case "D":
+                    player.change_weapon(int(rank))
+                case "S":
+                    player.fight(rank)
+                case "C":
+                    player.fight(rank)
 
+            # 3. remove card from cards
+            cards.remove(card)
+
+            return cards
+
+        except:
+            player.actions += 1
+            print("ListIndexOutOfRange")
+        
 
     # 4. return cards
     return cards
+
+
+def print_player_stats(player):
+    print("\n===============================\n")
+    print(f"ACTIONS: {player.actions}")
+    print(f"HEALTH: {player.health}")
+    print(f"WEAPON: {player.weapon}")
+
+    if player.last_fought_enemy == 15:
+        print("LAST FOUGHT ENEMY: NONE")
+    else:
+        print(f"LAST FOUGHT ENEMY: {player.last_fought_enemy}")
+
+    print("\n===============================\n")
 
 
 def translate_card(card:str):
@@ -76,7 +96,7 @@ def translate_card(card:str):
             rank = "Eight"
         case "9":
             rank = "Nine"
-        case "0":
+        case "10":
             rank = "Ten"
         case "J":
             rank = "Jack"
@@ -107,29 +127,25 @@ def print_floor_ui(cards, floor_number: int, player):
     
     if player.last_floor_skipped == 0:
         print("[0] Skip")
-
-    for i in range (0, cards.__len__()):
-        print(f"[{i+1}] {translate_card(cards[i])}")
-
-    print("\n===============================\n")
-    
-    print(f"HEALTH: {player.health}")
-    print(f"WEAPON: {player.weapon}")
-    if player.last_fought_enemy == 15:
-        print("LAST FOUGHT ENEMY: NONE")
     else:
-        print(f"LAST FOUGHT ENEMY: {player.last_fought_enemy}")
+        print("[0]")
 
-    print("\n===============================\n")
+    for i in range (0, 5):
+        try:
+            print(f"[{i+1}] {translate_card(cards[i])}")
+        except:
+            print(f"[{i+1}]")
+
+    print_player_stats(player)
 
 
 def shuffle_deck():
 
     deck = [
-        "2-H", "3-H", "4-H", "5-H", "6-H", "7-H", "8-H", "9-H", "0-H",
-        "2-D", "3-D", "4-D", "5-D", "6-D", "7-D", "8-D", "9-D", "0-D",
-        "2-S", "3-S", "4-S", "5-S", "6-S", "7-S", "8-S", "9-S", "0-S", "J-S", "Q-S", "K-S", "A-S",
-        "2-C", "3-C", "4-C", "5-C", "6-C", "7-C", "8-C", "9-C", "0-C", "J-C", "Q-C", "K-C", "A-C"
+        "2-H", "3-H", "4-H", "5-H", "6-H", "7-H", "8-H", "9-H", "10-H",
+        "2-D", "3-D", "4-D", "5-D", "6-D", "7-D", "8-D", "9-D", "10-D",
+        "2-S", "3-S", "4-S", "5-S", "6-S", "7-S", "8-S", "9-S", "10-S", "J-S", "Q-S", "K-S", "A-S",
+        "2-C", "3-C", "4-C", "5-C", "6-C", "7-C", "8-C", "9-C", "10-C", "J-C", "Q-C", "K-C", "A-C"
     ]
 
     shuffled_deck = []
@@ -145,6 +161,7 @@ def shuffle_deck():
         deck.remove(deck[card_index - 1])
 
     return shuffled_deck
+
 
 
 # main
@@ -165,14 +182,13 @@ def main():
     # set initial variables
     current_floor = []
     floor_count = 0
-    actions_remaining = 4
-    
+
 
     # gameplay loop
     while game_deck.__len__() > 0 and player.health > 0 and player.last_floor_skipped != 3:
         
         # set values
-        actions_remaining = 4
+        player.actions = 4
         player.previously_healed = False
         player.check_floor_skip()
 
@@ -184,7 +200,7 @@ def main():
             current_floor.append(game_deck.pop(0))
 
 
-        while actions_remaining > 0 and player.health > 0:
+        while player.actions > 0 and player.health > 0:
             # print the next floor
             print_floor_ui(current_floor, floor_count, player)
 
@@ -192,12 +208,14 @@ def main():
             current_floor = take_player_action(current_floor, player)
             
             if current_floor == []:
-                actions_remaining = 0
+                player.actions = 0
             else:
-                actions_remaining -= 1
+                player.actions -= 1
     
 
     # results
+    print_player_stats(player)
+
     # win
     if player.health != 0 and player.last_floor_skipped != 3:
         print("YOU WIN")

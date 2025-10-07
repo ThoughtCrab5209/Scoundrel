@@ -1,5 +1,8 @@
 class Player:
+
     def __init__(self):
+        self.actions = 4
+
         self.health = 20
         self.previously_healed = False
 
@@ -30,9 +33,7 @@ class Player:
 
     def fight(self, value):
         # translate value
-        if value == "0":
-            value = 10
-        elif value == "J":
+        if value == "J":
             value = 11
         elif value == "Q":
             value = 12
