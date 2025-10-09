@@ -6,9 +6,19 @@ from player import Player
 
 
 # functions
+def check_player_floor_skips(player):
+    
+    # if the player has skipped both the previous and current floors
+    if player.previous_floor_skipped and player.current_floor_skipped:
+        return False
+    # otherwise
+    else:
+        return True
+
+
 def take_player_action(cards, player):
 
-    if player.last_floor_skipped == 0:
+    if player.previous_floor_skipped == 0:
         print("Input the number of the card to interact with\n")
     else:
         print("Input the number of the card to interact with; This floor can not be skipped\n")
@@ -18,13 +28,13 @@ def take_player_action(cards, player):
 
     # 2. process
     # first skip
-    if user_input == '0' and player.last_floor_skipped == 0:
-        player.last_floor_skipped = 1
+    if user_input == '0' and not player.previous_floor_skipped:
+        player.skip_floor()
         cards = []
     
     # second skip (automatic loss)
-    elif user_input == '0' and player.last_floor_skipped != 0:
-        player.last_floor_skipped = 3
+    elif user_input == '0' and player.previous_floor_skipped:
+        player.skip_floor()
         cards = []
     
     else:
@@ -125,7 +135,7 @@ def print_floor_ui(cards, floor_number: int, player):
 
     print(f"=========== Floor {floor_number} ===========\n")
     
-    if player.last_floor_skipped == 0:
+    if not player.previous_floor_skipped:
         print("[0] Skip")
     else:
         print("[0]")
@@ -185,12 +195,13 @@ def main():
 
 
     # gameplay loop
-    while game_deck.__len__() > 0 and player.health > 0 and player.last_floor_skipped != 3:
+    while game_deck.__len__() > 0 and player.health > 0 and check_player_floor_skips(player):
         
-        # set values
+        # set/reset values
         player.actions = 4
         player.previously_healed = False
-        player.check_floor_skip()
+        player.previous_floor_skipped = player.current_floor_skipped
+        player.current_floor_skipped = False
 
         # increment floor count by 1
         floor_count += 1
@@ -198,7 +209,6 @@ def main():
         # generate the next floor
         for i in range(0, (5 - current_floor.__len__())):
             current_floor.append(game_deck.pop(0))
-
 
         while player.actions > 0 and player.health > 0:
             # print the next floor
@@ -217,7 +227,7 @@ def main():
     print_player_stats(player)
 
     # win
-    if player.health != 0 and player.last_floor_skipped != 3:
+    if player.health != 0 and check_player_floor_skips(player):
         print("YOU WIN")
 
     # lose by health = 0
@@ -225,7 +235,7 @@ def main():
         print("YOU LOSE BY DYING")
 
     # lose by skipping twice
-    elif player.last_floor_skipped == 3:
+    elif not check_player_floor_skips(player):
         print("YOU LOSE BY SKIPPING TWO SIMULTANEOUS FLOORS")
     
     else:

@@ -9,11 +9,8 @@ class Player:
         self.weapon = 0
         self.last_fought_enemy = 15
 
-        self.last_floor_skipped = 0
-        # 0 = can skip floor
-        # 1 = can't skip next floor
-        # 2 = reset to 0 next floor
-        # 3 = skip two rooms (lose)
+        self.previous_floor_skipped = False
+        self.current_floor_skipped = False
         
 
 
@@ -74,13 +71,6 @@ class Player:
         self.last_fought_enemy = 15
 
 
-    def check_floor_skip(self):
-        if self.last_floor_skipped == 1:
-            self.last_floor_skipped = 2
-        else:
-            self.last_floor_skipped = 0
-
-
     def skip_floor(self):
-        self.last_floor_skipped = 1
+        self.current_floor_skipped = True
 
