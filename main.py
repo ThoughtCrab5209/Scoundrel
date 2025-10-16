@@ -11,9 +11,9 @@ def check_player_floor_skips(player):
     # if the player has skipped both the previous and current floors
     if player.previous_floor_skipped and player.current_floor_skipped:
         return False
+    
     # otherwise
-    else:
-        return True
+    return True
 
 
 def take_player_action(cards, player):
@@ -27,18 +27,13 @@ def take_player_action(cards, player):
     user_input = input("Select a card: ")
 
     # 2. process
-    # first skip
-    if user_input == '0' and not player.previous_floor_skipped:
+    # skip
+    if user_input == '0':
         player.skip_floor()
         cards = []
     
-    # second skip (automatic loss)
-    elif user_input == '0' and player.previous_floor_skipped:
-        player.skip_floor()
-        cards = []
     
     else:
-
         try:
             card = cards[int(user_input) - 1]
             split_card = card.split("-")
@@ -57,8 +52,6 @@ def take_player_action(cards, player):
 
             # 3. remove card from cards
             cards.remove(card)
-
-            return cards
 
         except:
             player.actions += 1
@@ -181,7 +174,6 @@ def main():
     # generate random seed (plus print seed)
     seed = random.randrange(sys.maxsize)
     rng = random.Random(seed)
-    print("Seed was:", seed)
 
     # initialise the player
     player = Player()
@@ -239,8 +231,9 @@ def main():
         print("YOU LOSE BY SKIPPING TWO SIMULTANEOUS FLOORS")
     
     else:
-        print("WHAT")
+        print("UNHANDLED END STATE")
 
+    print(f"Seed for this run: {seed}")
 
 # run the program
 main()
