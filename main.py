@@ -41,11 +41,11 @@ def take_player_action(cards, player):
                 case "C":
                     player.fight(rank)
 
-            cards.remove(card)
+            cards[int(user_input) - 1] = None
 
         except:
             player.actions += 1
-            print("ListIndexOutOfRange")
+            print("NO CARD AVAILABLE")
         
     return cards
 
@@ -155,9 +155,7 @@ def main():
     random.Random(seed)
 
     player = Player()
-
     game_deck = shuffle_deck()
-
     current_floor = []
     floor_count = 0
 
@@ -194,6 +192,15 @@ def main():
                 player.actions = 0
             else:
                 player.actions -= 1
+        
+        # clear the floor if possible
+        try:
+            current_floor.remove(None)
+            current_floor.remove(None)
+            current_floor.remove(None)
+            current_floor.remove(None)
+        except:
+            print("NOTHING TO REMOVE")
     
 
     # results
