@@ -29,7 +29,6 @@ class Player:
     
 
     def fight(self, value):
-        # translate value
         if value == "J":
             value = 11
         elif value == "Q":
@@ -40,7 +39,6 @@ class Player:
             value = 14
         else:
             value = int(value)
-
 
         # check if player can fight with their weapon
         if self.weapon != 0 and value < self.last_fought_enemy:

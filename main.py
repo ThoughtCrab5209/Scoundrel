@@ -1,37 +1,28 @@
-# imports
+# --- imports ---
 import random
 import sys
 from player import Player
 
 
-
-# functions
+# --- functions ---
 def check_player_floor_skips(player):
-    
-    # if the player has skipped both the previous and current floors
     if player.previous_floor_skipped and player.current_floor_skipped:
         return False
     
-    # otherwise
     return True
 
 
 def take_player_action(cards, player):
-
     if player.previous_floor_skipped == 0:
         print("Input the number of the card to interact with\n")
     else:
         print("Input the number of the card to interact with; This floor can not be skipped\n")
 
-    # 1. pick a card
     user_input = input("Select a card: ")
 
-    # 2. process
-    # skip
     if user_input == '0':
         player.skip_floor()
         cards = []
-    
     
     else:
         try:
@@ -50,15 +41,12 @@ def take_player_action(cards, player):
                 case "C":
                     player.fight(rank)
 
-            # 3. remove card from cards
             cards.remove(card)
 
         except:
             player.actions += 1
             print("ListIndexOutOfRange")
         
-
-    # 4. return cards
     return cards
 
 
@@ -76,8 +64,7 @@ def print_player_stats(player):
     print("\n===============================\n")
 
 
-def translate_card(card:str):
-    
+def translate_card_shorthand(card:str):
     card = card.split("-")
     rank = card[0]
     suit = card[1]
@@ -125,7 +112,6 @@ def translate_card(card:str):
 
 
 def print_floor_ui(cards, floor_number: int, player):
-
     print(f"=========== Floor {floor_number} ===========\n")
     
     if not player.previous_floor_skipped:
@@ -135,7 +121,7 @@ def print_floor_ui(cards, floor_number: int, player):
 
     for i in range (0, 5):
         try:
-            print(f"[{i+1}] {translate_card(cards[i])}")
+            print(f"[{i+1}] {translate_card_shorthand(cards[i])}")
         except:
             print(f"[{i+1}]")
 
@@ -143,7 +129,6 @@ def print_floor_ui(cards, floor_number: int, player):
 
 
 def shuffle_deck():
-
     deck = [
         "2-H", "3-H", "4-H", "5-H", "6-H", "7-H", "8-H", "9-H", "10-H",
         "2-D", "3-D", "4-D", "5-D", "6-D", "7-D", "8-D", "9-D", "10-D",
@@ -154,59 +139,55 @@ def shuffle_deck():
     shuffled_deck = []
 
     while deck.__len__() > 0:
-        # pick the next card
         card_index = random.randint(0, deck.__len__())
 
-        # add the card to the shuffled deck
         shuffled_deck.append(deck[card_index - 1])
 
-        # remove it from the deck
         deck.remove(deck[card_index - 1])
 
     return shuffled_deck
 
 
-
 # main
 def main():
-    
     # Code obtained from: https://stackoverflow.com/questions/5012560/how-to-query-seed-used-by-random-random
-    # generate random seed (plus print seed)
     seed = random.randrange(sys.maxsize)
-    rng = random.Random(seed)
+    random.Random(seed)
 
-    # initialise the player
     player = Player()
 
-    # generate the deck
     game_deck = shuffle_deck()
 
-    # set initial variables
     current_floor = []
     floor_count = 0
 
 
     # gameplay loop
-    while game_deck.__len__() > 0 and player.health > 0 and check_player_floor_skips(player):
+    while (game_deck.__len__() > 0 or current_floor.__len__() > 0) and player.health > 0 and check_player_floor_skips(player):
         
-        # set/reset values
-        player.actions = 4
-        player.previously_healed = False
-        player.previous_floor_skipped = player.current_floor_skipped
-        player.current_floor_skipped = False
-
-        # increment floor count by 1
         floor_count += 1
 
         # generate the next floor
         for i in range(0, (5 - current_floor.__len__())):
-            current_floor.append(game_deck.pop(0))
+            try:
+                current_floor.append(game_deck.pop(0))
+            except:
+                print("END OF DECK REACHED")
 
+        # set/reset values
+        if current_floor.__len__() < 4:
+            player.actions = current_floor.__len__()
+        else:
+            player.actions = 4
+            
+        player.previously_healed = False
+        player.previous_floor_skipped = player.current_floor_skipped
+        player.current_floor_skipped = False
+
+        # player action loop
         while player.actions > 0 and player.health > 0:
-            # print the next floor
             print_floor_ui(current_floor, floor_count, player)
 
-            # actions
             current_floor = take_player_action(current_floor, player)
             
             if current_floor == []:
@@ -218,15 +199,12 @@ def main():
     # results
     print_player_stats(player)
 
-    # win
     if player.health != 0 and check_player_floor_skips(player):
         print("YOU WIN")
 
-    # lose by health = 0
     elif player.health == 0:
         print("YOU LOSE BY DYING")
 
-    # lose by skipping twice
     elif not check_player_floor_skips(player):
         print("YOU LOSE BY SKIPPING TWO SIMULTANEOUS FLOORS")
     
