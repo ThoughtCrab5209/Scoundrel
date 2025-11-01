@@ -5,11 +5,38 @@ from player import Player
 
 
 # --- functions ---
-def check_player_floor_skips(player):
-    if player.previous_floor_skipped and player.current_floor_skipped:
-        return False
+def pick_weapon(player, value):
+    may_fight_with_weapon = False
+    fight_type = ""
     
-    return True
+    if value == "J":
+        value = 11
+    elif value == "Q":
+        value = 12
+    elif value == "K":
+        value = 13
+    elif value == "A":
+        value = 14
+    else:
+        value = int(value)
+
+    if player.weapon != 0 and value < player.last_fought_enemy:
+        may_fight_with_weapon = True
+    else:
+        may_fight_with_weapon = False
+
+    while fight_type != "B" and fight_type != "W":
+        if not may_fight_with_weapon:
+            fight_type = "B"
+            player.fight_with_hands(value)
+        else:
+            fight_type = input("Fight using your weapon (W) or barehanded (B)? ").capitalize()
+            if fight_type == "W":
+                player.fight_with_weapon(value)
+            elif fight_type == "B":
+                player.fight_with_hands(value)
+            else:
+                pass
 
 
 def take_player_action(cards, player):
@@ -37,15 +64,14 @@ def take_player_action(cards, player):
                 case "D":
                     player.change_weapon(int(rank))
                 case "S":
-                    player.fight(rank)
+                    pick_weapon(player, rank)
                 case "C":
-                    player.fight(rank)
+                    pick_weapon(player, rank)
 
             cards[int(user_input) - 1] = None
 
         except:
             player.actions += 1
-            print("NO CARD AVAILABLE")
         
     return cards
 
@@ -107,7 +133,6 @@ def translate_card_shorthand(card:str):
         case "C":
             suit = "Clubs"
 
-
     return f"{rank} of {suit}"
 
 
@@ -128,6 +153,13 @@ def print_floor_ui(cards, floor_number: int, player):
     print_player_stats(player)
 
 
+def check_player_floor_skips(player):
+    if player.previous_floor_skipped and player.current_floor_skipped:
+        return False
+    
+    return True
+
+
 def shuffle_deck():
     deck = [
         "2-H", "3-H", "4-H", "5-H", "6-H", "7-H", "8-H", "9-H", "10-H",
@@ -140,15 +172,13 @@ def shuffle_deck():
 
     while deck.__len__() > 0:
         card_index = random.randint(0, deck.__len__())
-
         shuffled_deck.append(deck[card_index - 1])
-
         deck.remove(deck[card_index - 1])
 
     return shuffled_deck
 
 
-# main
+# --- main ---
 def main():
     # Code obtained from: https://stackoverflow.com/questions/5012560/how-to-query-seed-used-by-random-random
     seed = random.randrange(sys.maxsize)
@@ -159,28 +189,17 @@ def main():
     current_floor = []
     floor_count = 0
 
-
     # gameplay loop
     while (game_deck.__len__() > 0 or current_floor.__len__() > 0) and player.health > 0 and check_player_floor_skips(player):
-        
-        floor_count += 1
-
         # generate the next floor
         for i in range(0, (5 - current_floor.__len__())):
             try:
                 current_floor.append(game_deck.pop(0))
             except:
-                print("END OF DECK REACHED")
+                pass
 
-        # set/reset values
-        if current_floor.__len__() < 4:
-            player.actions = current_floor.__len__()
-        else:
-            player.actions = 4
-            
-        player.previously_healed = False
-        player.previous_floor_skipped = player.current_floor_skipped
-        player.current_floor_skipped = False
+        floor_count += 1
+        player.reset_status(current_floor.__len__())
 
         # player action loop
         while player.actions > 0 and player.health > 0:
@@ -200,21 +219,17 @@ def main():
             current_floor.remove(None)
             current_floor.remove(None)
         except:
-            print("NOTHING TO REMOVE")
+            pass
     
-
     # results
     print_player_stats(player)
 
     if player.health != 0 and check_player_floor_skips(player):
         print("YOU WIN")
-
     elif player.health == 0:
         print("YOU LOSE BY DYING")
-
     elif not check_player_floor_skips(player):
         print("YOU LOSE BY SKIPPING TWO SIMULTANEOUS FLOORS")
-    
     else:
         print("UNHANDLED END STATE")
 

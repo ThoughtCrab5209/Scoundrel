@@ -13,6 +13,16 @@ class Player:
         self.current_floor_skipped = False
         
 
+    def reset_status(self, count: int):
+        if count < 4:
+            self.actions = count
+        else:
+            self.actions = 4
+
+        self.previously_healed = False
+        self.previous_floor_skipped = self.current_floor_skipped
+        self.current_floor_skipped = False
+
 
     def heal(self, value: int):
         if not self.previously_healed:
@@ -22,43 +32,26 @@ class Player:
                 self.health = 20
             
             self.previously_healed = True
-        
-        else:
-            # do nothing
-            return
     
 
-    def fight(self, value):
-        if value == "J":
-            value = 11
-        elif value == "Q":
-            value = 12
-        elif value == "K":
-            value = 13
-        elif value == "A":
-            value = 14
-        else:
-            value = int(value)
+    def fight_with_hands(self, value: int):
+        self.health -= value
+    
+        if self.health < 0:
+            self.health = 0
 
-        # check if player can fight with their weapon
-        if self.weapon != 0 and value < self.last_fought_enemy:
-            self.last_fought_enemy = value
-            value -= self.weapon
 
-            if value < 0:
-                value = 0
+    def fight_with_weapon(self, value: int):
+        self.last_fought_enemy = value
+        value -= self.weapon
 
-            self.health -= value
+        if value < 0:
+            value = 0
 
-            if self.health < 0:
-                self.health = 0
+        self.health -= value
 
-        # fight barehanded
-        else:
-            self.health -= value
-        
-            if self.health < 0:
-                self.health = 0
+        if self.health < 0:
+            self.health = 0    
 
 
     def change_weapon(self, value: int):
