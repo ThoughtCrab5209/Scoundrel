@@ -78,8 +78,8 @@ def take_player_action(cards, player):
 
 def print_player_stats(player):
     print("\n===============================\n")
-    print(f"ACTIONS: {player.actions}")
-    print(f"HEALTH: {player.health}")
+    print(f"ACTIONS: {player.actions} / 4")
+    print(f"HEALTH: {player.health} / 20")
     print(f"WEAPON: {player.weapon}")
 
     if player.last_fought_enemy == 15:
@@ -95,45 +95,65 @@ def translate_card_shorthand(card:str):
     rank = card[0]
     suit = card[1]
 
+    value = 0
+    action = ""
+
     match rank:
         case "2":
             rank = "Two"
+            value = 2
         case "3":
             rank = "Three"
+            value = 3
         case "4":
             rank = "Four"
+            value = 4
         case "5":
             rank = "Five"
+            value = 5
         case "6":
             rank = "Six"
+            value = 6
         case "7":
             rank = "Seven"
+            value = 7
         case "8":
             rank = "Eight"
+            value = 8
         case "9":
             rank = "Nine"
+            value = 9
         case "10":
             rank = "Ten"
+            value = 10
         case "J":
             rank = "Jack"
+            value = 11
         case "Q":
             rank = "Queen"
+            value = 12
         case "K":
             rank = "King"
+            value = 13
         case "A":
             rank = "Ace"
+            value = 14
 
     match suit:
         case "H":
             suit = "Hearts"
+            action = "Heal"
         case "D":
             suit = "Diamonds"
+            action = "Acquire weapon"
         case "S":
             suit = "Spades"
+            action = "Fight"
         case "C":
             suit = "Clubs"
+            action = "Fight"
 
-    return f"{rank} of {suit}"
+    return f"{rank} of {suit} - {action} {value}"
 
 
 def print_floor_ui(cards, floor_number: int, player):
